@@ -6,21 +6,22 @@ async function fetchFromApi(url) {
 }
 
 async function fetchData() {
-  const [pokemon, encounters] = await Promise.all([
-    fetchFromApi("https://pokeapi.co/api/v2/pokemon/pikachu"),
-    fetchFromApi("https://pokeapi.co/api/v2/pokemon/pikachu/encounters"),
-  ]);
-  const otherPokemon = {};
-  await Promise.all(
-    encounters.map(async (encounter) => {
-      const loc = await fetchFromApi(encounter.location_area.url);
-      const pokemonAtLocation = loc.pokemon_encounters
-        .filter((e) => e.pokemon.name !== "pikachu")
-        .map((e) => e.pokemon.name)
-        .join(", ");
-      otherPokemon[encounter.location_area.name] = pokemonAtLocation;
-    }),
+  const pokemon = await fetchFromApi(
+    "https://pokeapi.co/api/v2/pokemon/pikachu",
   );
+  const encounters = await fetchFromApi(
+    "https://pokeapi.co/api/v2/pokemon/pikachu/encounters",
+  );
+
+  const otherPokemon = {};
+  for (let encounter of encounters) {
+    const loc = await fetchFromApi(encounter.location_area.url);
+    const pokemonAtLocation = loc.pokemon_encounters
+      .filter((e) => e.pokemon.name !== "pikachu")
+      .map((e) => e.pokemon.name)
+      .join(", ");
+    otherPokemon[encounter.location_area.name] = pokemonAtLocation;
+  }
 
   return { pokemon, encounters, otherPokemon };
 }
